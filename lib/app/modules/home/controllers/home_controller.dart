@@ -1,23 +1,19 @@
 import 'package:get/get.dart';
 
 class HomeController extends GetxController {
-  //TODO: Implement HomeController
+  var selectedCategory = ''.obs; // Tracks the selected category
 
-  final count = 0.obs;
-  @override
-  void onInit() {
-    super.onInit();
+  final List<Map<String, String>> categories = [
+    {'name': 'TV', 'image': 'assets/images/tv.png'},
+    {'name': 'Headphones', 'image': 'assets/images/audio.png'},
+    {'name': 'Laptop', 'image': 'assets/images/laptop.png'},
+    {'name': 'Mobile', 'image': 'assets/images/mobile.png'},
+    {'name': 'Gaming', 'image': 'assets/images/gaming.png'},
+  ];
+
+  // Method to update the selected category
+  void setSelectedCategory(String category) {
+    selectedCategory.value = category;
   }
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
-  }
-
-  void increment() => count.value++;
 }

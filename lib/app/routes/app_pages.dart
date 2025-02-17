@@ -13,11 +13,13 @@ class AppPages {
   AppPages._();
 
   static const INITIAL = Routes.LOGIN;
+  static const LOGIN = Routes.LOGIN;
+  static const HOME = Routes.HOME;
 
   static final routes = [
     GetPage(
       name: _Paths.HOME,
-      page: () => const HomeView(),
+      page: () => HomeView(),
       binding: HomeBinding(),
     ),
     GetPage(
