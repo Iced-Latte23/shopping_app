@@ -69,7 +69,7 @@ class HomeView extends GetView<HomeController> {
                     var product = productController.filterProducts[index];
                     return GestureDetector(
                       onTap: () {
-                        Get.toNamed(Routes.PRODUCT_DETAIL, arguments: product);
+                        Get.offNamed(Routes.PRODUCT_DETAIL, arguments: product);
                       },
                       child: Card(
                         elevation: 6,

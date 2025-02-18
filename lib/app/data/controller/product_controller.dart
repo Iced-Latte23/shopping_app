@@ -13,7 +13,6 @@ class ProductController extends GetxController {
   var selectedProduct = Rxn<Products>();
   TextEditingController searchController = TextEditingController();
 
-
   @override
   void onInit() {
     super.onInit();
@@ -37,18 +36,26 @@ class ProductController extends GetxController {
     selectedProduct.value = product;
   }
 
-// Filter products by category and search query
+  // Filter products by category and search query
   void applyFilters(String category, String query) {
-    List<Products> filteredList = product;
+    List<Products> filteredList = List.from(product);
+
+    String mappedCategory = category.toLowerCase() == "headphones" ? "audio" : category;
+
     // Step 1: Filter by category
-    if (category.isNotEmpty) {
-      filteredList =
-          filteredList.where((item) => item.category == category).toList();
+    if (mappedCategory.isNotEmpty) {
+      filteredList = filteredList
+          .where(
+              (item) => item.category.toLowerCase() == mappedCategory.toLowerCase())
+          .toList();
     }
+
     // Step 2: Filter by search query
     if (query.isNotEmpty) {
-      filteredList = filteredList.where((item) =>
-          item.title.toLowerCase().contains(query.toLowerCase())).toList();
+      filteredList = filteredList
+          .where(
+              (item) => item.title.toLowerCase().contains(query.toLowerCase()))
+          .toList();
     }
     // Update the filtered product list
     filterProducts.assignAll(filteredList);
