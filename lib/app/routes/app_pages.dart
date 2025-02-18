@@ -38,12 +38,12 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.PRODUCT_DETAIL,
-      page: () => const ProductDetailView(),
+      page: () => ProductDetailView(),
       binding: ProductDetailBinding(),
     ),
     GetPage(
       name: _Paths.FAVORITE,
-      page: () => const FavoriteView(),
+      page: () => FavoriteView(),
       binding: FavoriteBinding(),
     ),
   ];

@@ -32,30 +32,8 @@ class HomeView extends GetView<HomeController> {
           Obx(() {
             if (productController.filterProducts.isEmpty) {
               return SliverFillRemaining(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.sentiment_dissatisfied,
-                        size: 50,
-                        color: Colors.grey,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        "No products available",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
+                  child: Center(child: CircularProgressIndicator()));
             }
-
             return SliverPadding(
               padding: const EdgeInsets.all(16),
               sliver: SliverGrid(
@@ -70,7 +48,7 @@ class HomeView extends GetView<HomeController> {
                     var product = productController.filterProducts[index];
                     return GestureDetector(
                       onTap: () {
-                        Get.offNamed(Routes.PRODUCT_DETAIL, arguments: product);
+                        Get.offNamed(Routes.PRODUCT_DETAIL, arguments: {'product': product, 'backRoute': '/home'});
                       },
                       child: Card(
                         elevation: 6,
@@ -96,10 +74,12 @@ class HomeView extends GetView<HomeController> {
                                       Image.network(
                                         product.image,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
                                           return Center(
                                             child: Icon(
-                                              Icons.image_not_supported_outlined,
+                                              Icons
+                                                  .image_not_supported_outlined,
                                               size: 30,
                                               color: Colors.red,
                                             ),
@@ -113,26 +93,32 @@ class HomeView extends GetView<HomeController> {
                                         child: Obx(() {
                                           return GestureDetector(
                                             onTap: () async {
-                                              final userId = Supabase.instance.client.auth.currentUser?.id;
+                                              final userId = Supabase.instance
+                                                  .client.auth.currentUser?.id;
                                               if (userId == null) {
                                                 print("User not logged in!");
                                                 return;
                                               }
 
                                               // Toggle favorite state
-                                              await productController.toggleFavorite(product.id);
+                                              await productController
+                                                  .toggleFavorite(product.id);
                                             },
                                             child: Container(
                                               padding: const EdgeInsets.all(4),
                                               decoration: BoxDecoration(
-                                                color: Colors.grey.withOpacity(0.4),
-                                                borderRadius: BorderRadius.circular(10),
+                                                color: Colors.grey
+                                                    .withOpacity(0.4),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
                                               ),
                                               child: Icon(
-                                                productController.isFavorite(product.id)
+                                                productController
+                                                        .isFavorite(product.id)
                                                     ? Icons.favorite
                                                     : Icons.favorite_border,
-                                                color: productController.isFavorite(product.id)
+                                                color: productController
+                                                        .isFavorite(product.id)
                                                     ? Colors.red
                                                     : Colors.white,
                                                 size: 18,
@@ -238,13 +224,13 @@ class _StyledBottomNavigationBar extends StatelessWidget {
           onTap: (index) {
             switch (index) {
               case 0:
-                print('home');
+                Get.offNamed('/home');
                 break;
               case 1:
                 print('cart');
                 break;
               case 2:
-                print('favorite');
+                Get.offNamed('/favorite');
                 break;
               case 3:
                 print('profile');

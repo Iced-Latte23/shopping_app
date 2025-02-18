@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../data/controller/product_controller.dart';
 import '../../../data/modal/product.dart';
 import '../controllers/product_detail_controller.dart';
 
 class ProductDetailView extends GetView<ProductDetailController> {
-  const ProductDetailView({super.key});
+  ProductDetailView({super.key});
+  final productController = Get.put(ProductController());
 
   @override
   Widget build(BuildContext context) {
-    final Products product = Get.arguments;
+    final Map<String, dynamic> args = Get.arguments;
+    final Products product = args['product'];
+    final String backRoute = args['backRoute'] ?? '/home';
 
     // State for tracking if the product is a favorite
     bool isFavorite = false;
@@ -75,7 +79,7 @@ class ProductDetailView extends GetView<ProductDetailController> {
                         backgroundColor: Colors.black54,
                         child: IconButton(
                           icon: Icon(Icons.arrow_back, color: Colors.white),
-                          onPressed: () => Get.offNamed('/home'),
+                          onPressed: () => Get.offNamed(backRoute),
                         ),
                       ),
                     ),

@@ -13,7 +13,6 @@ class ProductController extends GetxController {
   var searchQuery = RxString("");
   var selectedProduct = Rxn<Products>();
   TextEditingController searchController = TextEditingController();
-  final Map<int, bool> _favorites = {};
   RxMap<int, bool> favorites = <int, bool>{}.obs;
 
   @override
@@ -137,5 +136,44 @@ class ProductController extends GetxController {
           .toList();
     }
     filterProducts.assignAll(filteredList);
+  }
+
+  // Computed property for favorite products
+  List<Products> get favoriteProducts {
+    if (product.isEmpty) {
+      print("No products available to filter favorites.");
+      return [];
+    }
+    return product.where((product) => favorites[product.id] ?? false).toList();
+  }
+
+  Future<List<Products>> fetchFavoriteProducts() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
+      print("User not logged in! Cannot fetch favorite products.");
+      return [];
+    }
+
+    try {
+      // Fetch favorite product IDs from Supabase
+      final response = await Supabase.instance.client
+          .from('favorite')
+          .select('product_id')
+          .eq('user_id', userId);
+
+      // Extract product IDs
+      final favoriteIds = response.map((item) => item['product_id'] as int).toList();
+      print("Favorite product IDs from Supabase: $favoriteIds");
+
+      // Filter products based on favorite IDs
+      final favoriteProducts = product.where((p) => favoriteIds.contains(p.id)).toList();
+      print("Favorite products fetched: ${favoriteProducts.length}");
+
+      return favoriteProducts;
+    } catch (e, stackTrace) {
+      print("Error fetching favorite products: $e");
+      print("Stack trace: $stackTrace");
+      return [];
+    }
   }
 }
