@@ -1,5 +1,7 @@
+import 'package:final_project/app/modules/cart/controllers/cart_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../data/controller/product_controller.dart';
 import '../../../data/modal/product.dart';
 import '../controllers/product_detail_controller.dart';
@@ -7,7 +9,7 @@ import '../controllers/product_detail_controller.dart';
 class ProductDetailView extends GetView<ProductDetailController> {
   ProductDetailView({super.key});
   final productController = Get.put(ProductController());
-
+  final cartController = Get.put(CartController());
   @override
   Widget build(BuildContext context) {
     final Map<String, dynamic> args = Get.arguments;
@@ -87,24 +89,31 @@ class ProductDetailView extends GetView<ProductDetailController> {
                     Positioned(
                       top: 40,
                       right: 16,
-                      child: GestureDetector(
-                        onTap: () {
-                          // Toggle favorite state
-                          isFavorite = !isFavorite;
-                          print(isFavorite
-                              ? "Added to favorites!"
-                              : "Removed from favorites!");
-                        },
-                        behavior: HitTestBehavior.opaque,
-                        child: CircleAvatar(
-                          backgroundColor: Colors.black54,
-                          child: Icon(
-                            isFavorite ? Icons.favorite : Icons.favorite_border,
-                            color: isFavorite ? Colors.red : Colors.white,
-                            size: 24,
+                      child: Obx(() {
+                        // Check if the product is favorited using the favorites map
+                        bool isFavorite = productController.favorites[product.id] ?? false;
+
+                        return GestureDetector(
+                          onTap: () async {
+                            final userId = Supabase.instance.client.auth.currentUser?.id;
+                            if (userId == null) {
+                              print("User not logged in!");
+                              return;
+                            }
+                            // Toggle favorite state
+                            await productController.toggleFavorite(product.id);
+                          },
+                          behavior: HitTestBehavior.opaque,
+                          child: CircleAvatar(
+                            backgroundColor: Colors.black54,
+                            child: Icon(
+                              isFavorite ? Icons.favorite : Icons.favorite_border,
+                              color: isFavorite ? Colors.red : Colors.white,
+                              size: 24,
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      }),
                     ),
                   ],
                 ),
@@ -209,7 +218,7 @@ class ProductDetailView extends GetView<ProductDetailController> {
                       // Add to Cart Button with Ripple Animation
                       ElevatedButton(
                         onPressed: () {
-                          print("Product added to cart!");
+                          cartController.addToCart(product); // Add product to cart
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
@@ -221,22 +230,16 @@ class ProductDetailView extends GetView<ProductDetailController> {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           minimumSize: Size(double.infinity, 50),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.shopping_cart, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              'ADD TO CART',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          'ADD TO CART',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                          ),
                         ),
                       ),
+                      SizedBox(height: 25)
                     ],
                   ),
                 ),

@@ -227,7 +227,7 @@ class _StyledBottomNavigationBar extends StatelessWidget {
                 Get.offNamed('/home');
                 break;
               case 1:
-                print('cart');
+                Get.offNamed('/cart');
                 break;
               case 2:
                 Get.offNamed('/favorite');

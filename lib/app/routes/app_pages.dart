@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../modules/cart/bindings/cart_binding.dart';
+import '../modules/cart/views/cart_view.dart';
 import '../modules/favorite/bindings/favorite_binding.dart';
 import '../modules/favorite/views/favorite_view.dart';
 import '../modules/home/bindings/home_binding.dart';
@@ -45,6 +47,11 @@ class AppPages {
       name: _Paths.FAVORITE,
       page: () => FavoriteView(),
       binding: FavoriteBinding(),
+    ),
+    GetPage(
+      name: _Paths.CART,
+      page: () => CartView(),
+      binding: CartBinding(),
     ),
   ];
 }
