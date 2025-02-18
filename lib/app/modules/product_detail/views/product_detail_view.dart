@@ -22,75 +22,88 @@ class ProductDetailView extends GetView<ProductDetailController> {
             expandedHeight: 400, // Slightly reduced height for balance
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // Product Image with Parallax Effect
-                  Positioned.fill(
-                    child: Hero(
-                      tag: product.id, // Add Hero animation for smooth transitions
-                      child: Image.network(
-                        product.image,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Icon(
-                              Icons.image_not_supported_outlined,
-                              size: 50,
-                              color: Colors.grey,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  // Gradient Overlay
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.black.withOpacity(0.4),
-                            Colors.transparent,
-                          ],
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
+              background: Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Product Image with Parallax Effect
+                    Positioned.fill(
+                      child: Hero(
+                        tag: product.id,
+                        // Add Hero animation for smooth transitions
+                        child: GestureDetector(
+                          onTap: () {
+                            Get.offNamed('/product_detail', arguments: product);
+                          },
+                          child: Image.network(
+                            product.image,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Center(
+                                child: Icon(
+                                  Icons.image_not_supported_outlined,
+                                  size: 50,
+                                  color: Colors.grey,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  // Back Button in the Top-Left Corner
-                  Positioned(
-                    top: 40,
-                    left: 16,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.black54,
-                      child: IconButton(
-                        icon: Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () => Get.offNamed('/home'),
+                    // Gradient Overlay
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.black.withOpacity(0.4),
+                              Colors.transparent,
+                            ],
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                  // Favorite Icon in the Top-Right Corner
-                  Positioned(
-                    top: 40,
-                    right: 16,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.black54,
-                      child: IconButton(
-                        icon: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite ? Colors.red : Colors.white,
+                    // Back Button in the Top-Left Corner
+                    Positioned(
+                      top: 40,
+                      left: 16,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black54,
+                        child: IconButton(
+                          icon: Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => Get.offNamed('/home'),
                         ),
-                        onPressed: () {
+                      ),
+                    ),
+                    // Favorite Icon in the Top-Right Corner
+                    Positioned(
+                      top: 40,
+                      right: 16,
+                      child: GestureDetector(
+                        onTap: () {
                           // Toggle favorite state
                           isFavorite = !isFavorite;
-                          print(isFavorite ? "Added to favorites!" : "Removed from favorites!");
+                          print(isFavorite
+                              ? "Added to favorites!"
+                              : "Removed from favorites!");
                         },
+                        behavior: HitTestBehavior.opaque,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.black54,
+                          child: Icon(
+                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                            color: isFavorite ? Colors.red : Colors.white,
+                            size: 24,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -124,10 +137,14 @@ class ProductDetailView extends GetView<ProductDetailController> {
 
                       // Product Price with Gradient Background
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [Colors.green.shade400, Colors.green.shade700],
+                            colors: [
+                              Colors.green.shade400,
+                              Colors.green.shade700
+                            ],
                           ),
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -166,7 +183,8 @@ class ProductDetailView extends GetView<ProductDetailController> {
                               const SizedBox(height: 8),
                               Text(
                                 product.description,
-                                style: TextStyle(fontSize: 16, color: Colors.black87),
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.black87),
                               ),
                             ],
                           ),
@@ -175,10 +193,13 @@ class ProductDetailView extends GetView<ProductDetailController> {
                       const SizedBox(height: 16),
 
                       // Additional Details with Modern Styling
-                      _buildDetailRow(Icons.branding_watermark, "Brand", product.brand),
-                      _buildDetailRow(Icons.model_training, "Model", product.model),
+                      _buildDetailRow(
+                          Icons.branding_watermark, "Brand", product.brand),
+                      _buildDetailRow(
+                          Icons.model_training, "Model", product.model),
                       _buildDetailRow(Icons.color_lens, "Color", product.color),
-                      _buildDetailRow(Icons.local_offer, "Discount", "${product.discount}%"),
+                      _buildDetailRow(Icons.local_offer, "Discount",
+                          "${product.discount}%"),
                       const SizedBox(height: 16),
 
                       // Add to Cart Button with Ripple Animation
@@ -233,7 +254,10 @@ class ProductDetailView extends GetView<ProductDetailController> {
           const SizedBox(width: 8),
           Text(
             "$label:",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87),
           ),
           const Spacer(),
           Text(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../routes/app_pages.dart';
 import '../controllers/home_controller.dart';
 import 'package:final_project/app/data/controller/product_controller.dart';
@@ -81,46 +82,67 @@ class HomeView extends GetView<HomeController> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Product Image
+                            // Product Image with Hero Animation
                             Expanded(
-                              child: ClipRRect(
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(15),
-                                ),
-                                child: Stack(
-                                  children: [
-                                    Image.network(
-                                      product.image,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        return Center(
-                                          child: Icon(
-                                            Icons.image_not_supported_outlined,
-                                            size: 30,
-                                            color: Colors.red,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    Positioned(
-                                      top: 8,
-                                      right: 8,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey.withOpacity(0.4),
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: Icon(
-                                          Icons.favorite_border,
-                                          color: Colors.white,
-                                          size: 18,
-                                        ),
+                              child: Hero(
+                                tag: product.id,
+                                child: ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(15),
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      // Product Image
+                                      Image.network(
+                                        product.image,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Center(
+                                            child: Icon(
+                                              Icons.image_not_supported_outlined,
+                                              size: 30,
+                                              color: Colors.red,
+                                            ),
+                                          );
+                                        },
                                       ),
-                                    ),
-                                  ],
+                                      // Favorite Icon in the Top-Right Corner
+                                      Positioned(
+                                        top: 8,
+                                        right: 8,
+                                        child: Obx(() {
+                                          return GestureDetector(
+                                            onTap: () async {
+                                              final userId = Supabase.instance.client.auth.currentUser?.id;
+                                              if (userId == null) {
+                                                print("User not logged in!");
+                                                return;
+                                              }
+
+                                              // Toggle favorite state
+                                              await productController.toggleFavorite(product.id);
+                                            },
+                                            child: Container(
+                                              padding: const EdgeInsets.all(4),
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey.withOpacity(0.4),
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: Icon(
+                                                productController.isFavorite(product.id)
+                                                    ? Icons.favorite
+                                                    : Icons.favorite_border,
+                                                color: productController.isFavorite(product.id)
+                                                    ? Colors.red
+                                                    : Colors.white,
+                                                size: 18,
+                                              ),
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -181,13 +203,115 @@ class HomeView extends GetView<HomeController> {
           }),
         ],
       ),
+      bottomNavigationBar: _StyledBottomNavigationBar(),
+    );
+  }
+}
+
+// Styled BottomNavigationBar with Gradient and Badges
+class _StyledBottomNavigationBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.5),
+            spreadRadius: 2,
+            blurRadius: 10,
+            offset: Offset(0, -2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: 0,
+          onTap: (index) {
+            switch (index) {
+              case 0:
+                print('home');
+                break;
+              case 1:
+                print('cart');
+                break;
+              case 2:
+                print('favorite');
+                break;
+              case 3:
+                print('profile');
+                break;
+            }
+          },
+          type: BottomNavigationBarType.fixed,
+          elevation: 0,
+          selectedItemColor: Colors.lightBlueAccent,
+          unselectedItemColor: Colors.grey,
+          selectedFontSize: 14,
+          unselectedFontSize: 12,
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: "Home",
+            ),
+            BottomNavigationBarItem(
+              icon: Stack(
+                children: [
+                  Icon(Icons.shopping_cart_outlined),
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      constraints: BoxConstraints(
+                        minWidth: 12,
+                        minHeight: 12,
+                      ),
+                      child: Text(
+                        '3',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              label: "Cart",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite_border),
+              label: "Favorites",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              label: "Profile",
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
 // Delegate for Sticky Category Header with Search Field
 class _StickyCategoryHeaderWithSearch extends SliverPersistentHeaderDelegate {
-  final productController = Get.put(ProductController());
   final List<Map<String, String>> categories;
   final RxString selectedCategory; // Reactive variable
   final Function(String) onCategoryTap;
@@ -203,13 +327,13 @@ class _StickyCategoryHeaderWithSearch extends SliverPersistentHeaderDelegate {
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white, // Semi-transparent background
+        color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1), // Subtle shadow for depth
+            color: Colors.black.withOpacity(0.1),
             spreadRadius: 5,
             blurRadius: 10,
-            offset: const Offset(0, 5), // Shadow below the header
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -221,7 +345,7 @@ class _StickyCategoryHeaderWithSearch extends SliverPersistentHeaderDelegate {
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: TextField(
-              controller: productController.searchController,
+              controller: Get.find<ProductController>().searchController,
               decoration: InputDecoration(
                 hintText: "Search products...",
                 hintStyle: TextStyle(
@@ -253,16 +377,16 @@ class _StickyCategoryHeaderWithSearch extends SliverPersistentHeaderDelegate {
                 suffixIcon: IconButton(
                   icon: Icon(Icons.clear, color: Colors.grey[700]),
                   onPressed: () {
-                    productController.searchController.clear();
-                    productController.applyFilters(
-                        selectedCategory.value = "", "");
+                    Get.find<ProductController>().searchController.clear();
+                    Get.find<ProductController>().applyFilters("", "");
                   },
                 ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
               ),
               style: const TextStyle(fontSize: 14, color: Colors.black87),
               onChanged: (query) {
-                productController.applyFilters(selectedCategory.value, query);
+                Get.find<ProductController>()
+                    .applyFilters(selectedCategory.value, query);
               },
             ),
           ),
@@ -271,7 +395,6 @@ class _StickyCategoryHeaderWithSearch extends SliverPersistentHeaderDelegate {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Obx(() {
-              // Use Obx to rebuild the widget when selectedCategory changes
               return Row(
                 children: categories.map((category) {
                   bool isSelected = category['name'] == selectedCategory.value;
@@ -280,8 +403,10 @@ class _StickyCategoryHeaderWithSearch extends SliverPersistentHeaderDelegate {
                     child: GestureDetector(
                       onTap: () {
                         selectedCategory.value = category['name']!;
-                        productController.applyFilters(category['name']!,
-                            productController.searchController.text);
+                        Get.find<ProductController>().applyFilters(
+                          category['name']!,
+                          Get.find<ProductController>().searchController.text,
+                        );
                       },
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -359,8 +484,7 @@ class _StickyCategoryHeaderWithSearch extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  double get maxExtent =>
-      245; // Adjusted height to accommodate the search field
+  double get maxExtent => 245;
 
   @override
   double get minExtent => 245;

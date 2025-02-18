@@ -2,6 +2,7 @@ import 'package:final_project/app/data/modal/product.dart';
 import 'package:final_project/app/data/service/product_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProductController extends GetxController {
   ProductService service = ProductService();
@@ -12,14 +13,100 @@ class ProductController extends GetxController {
   var searchQuery = RxString("");
   var selectedProduct = Rxn<Products>();
   TextEditingController searchController = TextEditingController();
+  final Map<int, bool> _favorites = {};
+  RxMap<int, bool> favorites = <int, bool>{}.obs;
 
   @override
   void onInit() {
     super.onInit();
+    loadFavorites();
     fetchProducts();
   }
 
-  // Fetch products from the API
+  Future<void> loadFavorites() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
+      print("User not logged in! Cannot load favorites.");
+      return;
+    }
+
+    print("Loading favorites for user ID: $userId");
+
+    try {
+      // Fetch favorite product IDs from Supabase
+      final response = await Supabase.instance.client
+          .from('favorite')
+          .select('product_id')
+          .eq('user_id', userId);
+
+      print("Raw response from Supabase: $response");
+
+      // Map the response to a list of product IDs
+      final favoriteIds = response.map((item) => item['product_id'] as int).toList();
+      print("Parsed favorite product IDs: $favoriteIds");
+
+      // Clear existing favorites before populating the map
+      favorites.clear();
+      print("Cleared existing favorites map.");
+
+      // Populate the reactive map with favorite product IDs
+      for (var id in favoriteIds) {
+        favorites[id] = true; // Mark the product as favorited
+        print("Added product ID $id to favorites map.");
+      }
+
+      print("Favorites map after loading: ${favorites.entries}");
+    } catch (e) {
+      print("Error loading favorites: $e");
+    }
+  }
+
+  bool isFavorite(int productId) {
+    return favorites[productId] ?? false;
+  }
+
+  // Toggle favorite state
+  Future<void> toggleFavorite(int productId) async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
+      print("User not logged in! $userId");
+      return;
+    }
+
+    // Validate product ID
+    if (productId == null || productId <= 0) {
+      print("Invalid product ID: $productId");
+      return;
+    }
+
+    bool updatedFavoriteState = !(favorites[productId] ?? false);
+    try {
+      if (updatedFavoriteState) {
+        await Supabase.instance.client.from('favorite').insert({
+          'user_id': userId,
+          'product_id': productId,
+        });
+      } else {
+        await Supabase.instance.client
+            .from('favorite')
+            .delete()
+            .eq('user_id', userId)
+            .eq('product_id', productId);
+      }
+
+      favorites.update(productId, (value) => updatedFavoriteState, ifAbsent: () => updatedFavoriteState);
+      print(updatedFavoriteState ? "Added to favorites!" : "Removed from favorites!");
+    } catch (e) {
+      print("Error toggling favorite: $e");
+      Get.snackbar(
+        "Error",
+        "Failed to update favorite state. Please try again.",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
   Future<void> fetchProducts() async {
     try {
       var productList = await service.fetchProducts();
@@ -27,22 +114,15 @@ class ProductController extends GetxController {
       filterProducts.assignAll(productList);
     } catch (e) {
       print('Error fetching products: $e');
-      // Optionally, show a snackbar to notify the user
       Get.snackbar('Error', 'Failed to load products. Please try again.');
     }
   }
 
-  void setSelectedProduct(Products product) {
-    selectedProduct.value = product;
-  }
-
-  // Filter products by category and search query
   void applyFilters(String category, String query) {
     List<Products> filteredList = List.from(product);
 
     String mappedCategory = category.toLowerCase() == "headphones" ? "audio" : category;
 
-    // Step 1: Filter by category
     if (mappedCategory.isNotEmpty) {
       filteredList = filteredList
           .where(
@@ -50,14 +130,12 @@ class ProductController extends GetxController {
           .toList();
     }
 
-    // Step 2: Filter by search query
     if (query.isNotEmpty) {
       filteredList = filteredList
           .where(
               (item) => item.title.toLowerCase().contains(query.toLowerCase()))
           .toList();
     }
-    // Update the filtered product list
     filterProducts.assignAll(filteredList);
   }
 }
