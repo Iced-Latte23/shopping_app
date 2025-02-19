@@ -232,6 +232,7 @@ class ProfileView extends GetView<ProfileController> {
                         textCancel: 'No',
                         confirmTextColor: Colors.white,
                         cancelTextColor: Colors.black,
+                        buttonColor: Colors.red,
                         onConfirm: () {
                           // Perform logout logic here
                           print('User logged out');
