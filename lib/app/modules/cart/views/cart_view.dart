@@ -10,6 +10,15 @@ class CartView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
+        title: Text("Cart"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.delete_forever),
+            onPressed: () {
+              cartController.clearCart();
+            },
+          ),
+        ],
       ),
       body: Obx(() {
         if (cartController.cartItems.isEmpty) {
@@ -17,14 +26,12 @@ class CartView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.shopping_cart_outlined,
-                    size: 50, color: Colors.grey),
+                Icon(Icons.shopping_cart_outlined, size: 50, color: Colors.grey),
                 const SizedBox(height: 16),
-                Text("Your cart is empty",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey)),
+                Text(
+                  "Your cart is empty",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+                ),
               ],
             ),
           );
@@ -39,10 +46,8 @@ class CartView extends StatelessWidget {
                   var item = cartController.cartItems[index];
                   return Dismissible(
                     key: Key('${item.userId}-${item.productId}'),
-                    // Composite key as unique identifier
                     direction: DismissDirection.endToStart,
-                    onDismissed: (_) =>
-                        cartController.removeFromCart(item.productId),
+                    onDismissed: (_) => cartController.removeFromCart(item.productId),
                     background: Container(
                       color: Colors.red,
                       alignment: Alignment.centerRight,
@@ -68,33 +73,31 @@ class CartView extends StatelessWidget {
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
                                 return Center(
-                                    child: Icon(
-                                        Icons.image_not_supported_outlined,
-                                        size: 30,
-                                        color: Colors.red));
+                                  child: Icon(Icons.image_not_supported_outlined, size: 30, color: Colors.red),
+                                );
                               },
                             ),
                           ),
                         ),
-                        title: Text(item.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.bold)),
+                        title: Text(
+                          item.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
                         subtitle: Obx(() {
                           return Text(
-                              '\$${item.price.toStringAsFixed(2)} x ${item.qty.value}');
+                            '\$${item.price.toStringAsFixed(2)} x ${item.qty.value})',
+                          );
                         }),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: Icon(Icons.remove_circle_outline,
-                                  color: Colors.red),
+                              icon: Icon(Icons.remove_circle_outline, color: Colors.red),
                               onPressed: () {
                                 if (item.qty.value > 1) {
-                                  cartController.updateCartItemQuantity(
-                                      item.productId, item.qty.value - 1);
+                                  cartController.updateCartItemQuantity(item.productId, item.qty.value - 1);
                                 } else {
                                   cartController.removeFromCart(item.productId);
                                 }
@@ -107,12 +110,10 @@ class CartView extends StatelessWidget {
                               );
                             }),
                             IconButton(
-                              icon: Icon(Icons.add_circle_outline,
-                                  color: Colors.green),
+                              icon: Icon(Icons.add_circle_outline, color: Colors.green),
                               onPressed: () {
-                                cartController.updateCartItemQuantity(
-                                    item.productId, item.qty.value + 1);
-                              },
+                                cartController.updateCartItemQuantity(item.productId, item.qty.value + 1);
+                              }
                             ),
                           ],
                         ),
@@ -127,16 +128,15 @@ class CartView extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Total:",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                    "Total:",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                   Obx(() {
                     return Text(
-                        '\$${cartController.totalPrice.toStringAsFixed(2)}',
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green));
+                      '\$${cartController.totalPrice.toStringAsFixed(2)}',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                    );
                   }),
                 ],
               ),
@@ -151,16 +151,14 @@ class CartView extends StatelessWidget {
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
                   elevation: 3,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   minimumSize: Size(double.infinity, 50),
                 ),
-                child: Text("CHECKOUT",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2)),
+                child: Text(
+                  "CHECKOUT",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                ),
               ),
             ),
           ],
@@ -172,6 +170,7 @@ class CartView extends StatelessWidget {
 }
 
 class _StyledBottomNavigationBar extends StatelessWidget {
+  final CartController cartController = Get.put(CartController());
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -233,25 +232,28 @@ class _StyledBottomNavigationBar extends StatelessWidget {
                   Positioned(
                     right: 0,
                     top: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      constraints: BoxConstraints(
-                        minWidth: 12,
-                        minHeight: 12,
-                      ),
-                      child: Text(
-                        '3',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
+                    child: Obx(() {
+                      final cartItemCount = cartController.cartItems.fold<int>(0, (sum, item) => sum + item.qty.value);
+                      return Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+                        constraints: BoxConstraints(
+                          minWidth: 12,
+                          minHeight: 12,
+                        ),
+                        child: Text(
+                          cartItemCount.toString(),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      );
+                    }),
                   ),
                 ],
               ),

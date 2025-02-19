@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:final_project/app/data/service/product_service.dart';
 import '../../../data/modal/cart.dart';
 import '../../../data/modal/product.dart';
 
@@ -126,6 +125,25 @@ class CartController extends GetxController {
       print("Cart item quantity updated successfully!");
     } catch (e) {
       print("Error updating cart item quantity: $e");
+    }
+  }
+
+  // Clear all items from the cart
+  Future<void> clearCart() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
+      print("User not logged in!");
+      return;
+    }
+    try {
+      await Supabase.instance.client
+          .from('cart')
+          .delete()
+          .eq('user_id', userId);
+      cartItems.clear();
+      print("Cart cleared successfully!");
+    } catch (e) {
+      print("Error clearing cart: $e");
     }
   }
 

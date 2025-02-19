@@ -196,8 +196,9 @@ class ProductDetailView extends GetView<ProductDetailController> {
                               const SizedBox(height: 8),
                               Text(
                                 product.description,
+                                textAlign: TextAlign.justify,
                                 style: TextStyle(
-                                    fontSize: 16, color: Colors.black87),
+                                    fontSize: 14, color: Colors.black87),
                               ),
                             ],
                           ),
@@ -219,6 +220,49 @@ class ProductDetailView extends GetView<ProductDetailController> {
                       ElevatedButton(
                         onPressed: () {
                           cartController.addToCart(product.id, product.price, product.image, product.title);
+
+
+                          // Show Get.snackbar at the top
+                          Get.snackbar(
+                            "",
+                            "",
+                            titleText: Text(
+                              "Added to Cart",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              maxLines: 1, // Limit the title to one line
+                              overflow: TextOverflow.ellipsis, // Add ellipsis if the text overflows
+                            ),
+                            messageText: Text(
+                              "${product.title} has been added to your cart!",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                              ),
+                              maxLines: 1, // Limit the message to one line
+                              overflow: TextOverflow.ellipsis, // Add ellipsis if the text overflows
+                            ),
+                            snackPosition: SnackPosition.TOP,
+                            backgroundColor: Colors.green,
+                            colorText: Colors.white,
+                            duration: Duration(seconds: 2),
+                            margin: EdgeInsets.only(top: kToolbarHeight + 16, left: 16, right: 16),
+                            borderRadius: 12,
+                            isDismissible: true,
+                            dismissDirection: DismissDirection.horizontal,
+                            mainButton: TextButton(
+                              onPressed: () {
+                                Get.toNamed('/cart');
+                              },
+                              child: Text(
+                                "VIEW CART",
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
