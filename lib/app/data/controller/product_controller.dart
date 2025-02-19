@@ -28,20 +28,18 @@ class ProductController extends GetxController {
       print("User not logged in! Cannot load favorites.");
       return;
     }
-
     print("Loading favorites for user ID: $userId");
-
     try {
       // Fetch favorite product IDs from Supabase
       final response = await Supabase.instance.client
           .from('favorite')
           .select('product_id')
           .eq('user_id', userId);
-
       print("Raw response from Supabase: $response");
 
       // Map the response to a list of product IDs
-      final favoriteIds = response.map((item) => item['product_id'] as int).toList();
+      final favoriteIds = response.map((item) => item['product_id'] as int)
+          .toList();
       print("Parsed favorite product IDs: $favoriteIds");
 
       // Clear existing favorites before populating the map
@@ -53,7 +51,6 @@ class ProductController extends GetxController {
         favorites[id] = true; // Mark the product as favorited
         print("Added product ID $id to favorites map.");
       }
-
       print("Favorites map after loading: ${favorites.entries}");
     } catch (e) {
       print("Error loading favorites: $e");
@@ -93,8 +90,11 @@ class ProductController extends GetxController {
             .eq('product_id', productId);
       }
 
-      favorites.update(productId, (value) => updatedFavoriteState, ifAbsent: () => updatedFavoriteState);
-      print(updatedFavoriteState ? "Added to favorites!" : "Removed from favorites!");
+      favorites.update(productId, (value) => updatedFavoriteState,
+          ifAbsent: () => updatedFavoriteState);
+      print(updatedFavoriteState
+          ? "Added to favorites!"
+          : "Removed from favorites!");
     } catch (e) {
       print("Error toggling favorite: $e");
       Get.snackbar(

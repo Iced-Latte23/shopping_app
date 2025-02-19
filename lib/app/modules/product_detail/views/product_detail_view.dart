@@ -218,7 +218,7 @@ class ProductDetailView extends GetView<ProductDetailController> {
                       // Add to Cart Button with Ripple Animation
                       ElevatedButton(
                         onPressed: () {
-                          cartController.addToCart(product); // Add product to cart
+                          cartController.addToCart(product.id, product.price, product.image, product.title);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,

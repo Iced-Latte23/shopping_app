@@ -11,7 +11,7 @@ class ProductService {
       final response = await http.get(Uri.parse(getProductUrl));
       if (response.statusCode == 200) {
 
-        print('API Response: ${response.body}');
+        // print('API Response: ${response.body}');
 
         Map<String, dynamic> jsonResponse = json.decode(response.body);
         List<dynamic> productsJson = jsonResponse['products'];
