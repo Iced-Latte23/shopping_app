@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:final_project/app/data/controller/product_controller.dart';
 
 import '../../../data/modal/product.dart';
+import '../../../widgets/bottom_nav_bar.dart';
 
 class FavoriteView extends StatelessWidget {
   final ProductController productController = Get.find<ProductController>();
@@ -184,109 +185,7 @@ class FavoriteView extends StatelessWidget {
           }
         },
       ),
-      bottomNavigationBar: _StyledBottomNavigationBar(),
-    );
-  }
-}
-
-// Styled BottomNavigationBar with Gradient and Badges
-class _StyledBottomNavigationBar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withOpacity(0.5),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: 2,
-          onTap: (index) {
-            switch (index) {
-              case 0:
-                Get.offNamed('/home');
-                break;
-              case 1:
-                print('cart');
-                break;
-              case 2:
-                Get.offNamed('/favorite');
-                break;
-              case 3:
-                print('profile');
-                break;
-            }
-          },
-          type: BottomNavigationBarType.fixed,
-          elevation: 0,
-          selectedItemColor: Colors.lightBlueAccent,
-          unselectedItemColor: Colors.grey,
-          selectedFontSize: 14,
-          unselectedFontSize: 12,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.home),
-              label: "Home",
-            ),
-            BottomNavigationBarItem(
-              icon: Stack(
-                children: [
-                  const Icon(Icons.shopping_cart_outlined),
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 12,
-                        minHeight: 12,
-                      ),
-                      child: const Text(
-                        '3',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              label: "Cart",
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.favorite_border),
-              label: "Favorites",
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.person_outline),
-              label: "Profile",
-            ),
-          ],
-        ),
-      ),
+      bottomNavigationBar: StyledBottomNavigationBar(index: 2),
     );
   }
 }

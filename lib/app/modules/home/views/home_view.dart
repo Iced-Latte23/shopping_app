@@ -190,7 +190,7 @@ class HomeView extends GetView<HomeController> {
           }),
         ],
       ),
-      bottomNavigationBar: StyledBottomNavigationBar(),
+      bottomNavigationBar: StyledBottomNavigationBar(index: 0),
     );
   }
 }
@@ -263,6 +263,7 @@ class _StickyCategoryHeaderWithSearch extends SliverPersistentHeaderDelegate {
                   icon: Icon(Icons.clear, color: Colors.grey[700]),
                   onPressed: () {
                     Get.find<ProductController>().searchController.clear();
+                    Get.find<HomeController>().selectedCategory.value = "";
                     Get.find<ProductController>().applyFilters("", "");
                   },
                 ),

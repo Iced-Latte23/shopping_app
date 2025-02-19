@@ -4,6 +4,9 @@ import 'package:get/get.dart';
 import '../modules/cart/controllers/cart_controller.dart';
 
 class StyledBottomNavigationBar extends StatelessWidget {
+  StyledBottomNavigationBar({required this.index, super.key});
+  int index;
+
   final CartController cartController = Get.put(CartController());
   @override
   Widget build(BuildContext context) {
@@ -29,7 +32,7 @@ class StyledBottomNavigationBar extends StatelessWidget {
           topRight: Radius.circular(20),
         ),
         child: BottomNavigationBar(
-          currentIndex: 1,
+          currentIndex: index,
           onTap: (index) {
             switch (index) {
               case 0:

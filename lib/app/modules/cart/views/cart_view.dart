@@ -1,9 +1,12 @@
+import 'package:final_project/app/data/controller/product_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../widgets/bottom_nav_bar.dart';
 import '../controllers/cart_controller.dart';
 
 class CartView extends StatelessWidget {
   final CartController cartController = Get.put(CartController());
+  final ProductController productController = Get.find<ProductController>();
 
   @override
   Widget build(BuildContext context) {
@@ -164,112 +167,7 @@ class CartView extends StatelessWidget {
           ],
         );
       }),
-      bottomNavigationBar: _StyledBottomNavigationBar(),
-    );
-  }
-}
-
-class _StyledBottomNavigationBar extends StatelessWidget {
-  final CartController cartController = Get.put(CartController());
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withOpacity(0.5),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: 1,
-          onTap: (index) {
-            switch (index) {
-              case 0:
-                Get.offNamed('/home');
-                break;
-              case 1:
-                Get.offNamed('/cart');
-                break;
-              case 2:
-                Get.offNamed('/favorite');
-                break;
-              case 3:
-                print('profile');
-                break;
-            }
-          },
-          type: BottomNavigationBarType.fixed,
-          elevation: 0,
-          selectedItemColor: Colors.lightBlueAccent,
-          unselectedItemColor: Colors.grey,
-          selectedFontSize: 14,
-          unselectedFontSize: 12,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: "Home",
-            ),
-            BottomNavigationBarItem(
-              icon: Stack(
-                children: [
-                  Icon(Icons.shopping_cart_outlined),
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Obx(() {
-                      final cartItemCount = cartController.cartItems.fold<int>(0, (sum, item) => sum + item.qty.value);
-                      return Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        constraints: BoxConstraints(
-                          minWidth: 12,
-                          minHeight: 12,
-                        ),
-                        child: Text(
-                          cartItemCount.toString(),
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 8,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      );
-                    }),
-                  ),
-                ],
-              ),
-              label: "Cart",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.favorite_border),
-              label: "Favorites",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              label: "Profile",
-            ),
-          ],
-        ),
-      ),
+      bottomNavigationBar: StyledBottomNavigationBar(index: 1),
     );
   }
 }
