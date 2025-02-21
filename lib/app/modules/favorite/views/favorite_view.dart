@@ -87,18 +87,20 @@ class FavoriteView extends StatelessWidget {
                             ),
                             child: Stack(
                               children: [
-                                Image.network(
-                                  product.image,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Center(
-                                      child: Icon(
-                                        Icons.image_not_supported_outlined,
-                                        size: 30,
-                                        color: Colors.red,
-                                      ),
-                                    );
-                                  },
+                                Center(
+                                  child: Image.network(
+                                    product.image,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Center(
+                                        child: Icon(
+                                          Icons.image_not_supported_outlined,
+                                          size: 30,
+                                          color: Colors.red,
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
                                 Positioned(
                                   top: 8,

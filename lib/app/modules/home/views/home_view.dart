@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../data/controller/theme_controller.dart';
 import '../../../routes/app_pages.dart';
 import '../../../widgets/bottom_nav_bar.dart';
 import '../controllers/home_controller.dart';
@@ -9,12 +10,12 @@ import 'package:final_project/app/data/controller/product_controller.dart';
 class HomeView extends GetView<HomeController> {
   HomeView({super.key});
 
-  final productController = Get.put(ProductController());
+  final productController = Get.find<ProductController>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      // backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
           // Sticky Category Section with Search Field
@@ -33,7 +34,28 @@ class HomeView extends GetView<HomeController> {
           Obx(() {
             if (productController.filterProducts.isEmpty) {
               return SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()));
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.shopping_cart_outlined,
+                        size: 60,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "No Products Available",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
             }
             return SliverPadding(
               padding: const EdgeInsets.all(16),
@@ -72,20 +94,22 @@ class HomeView extends GetView<HomeController> {
                                   child: Stack(
                                     children: [
                                       // Product Image
-                                      Image.network(
-                                        product.image,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                          return Center(
-                                            child: Icon(
-                                              Icons
-                                                  .image_not_supported_outlined,
-                                              size: 30,
-                                              color: Colors.red,
-                                            ),
-                                          );
-                                        },
+                                      Center(
+                                        child: Image.network(
+                                          product.image,
+                                          fit: BoxFit.contain,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Center(
+                                              child: Icon(
+                                                Icons
+                                                    .image_not_supported_outlined,
+                                                size: 30,
+                                                color: Colors.red,
+                                              ),
+                                            );
+                                          },
+                                        ),
                                       ),
                                       // Favorite Icon in the Top-Right Corner
                                       Positioned(
@@ -210,9 +234,10 @@ class _StickyCategoryHeaderWithSearch extends SliverPersistentHeaderDelegate {
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final ThemeController themeController = Get.find<ThemeController>();
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeController.isDarkMode.value ? Colors.grey[900] : Colors.white ,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -222,13 +247,13 @@ class _StickyCategoryHeaderWithSearch extends SliverPersistentHeaderDelegate {
           ),
         ],
       ),
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 65, bottom: 10),
+      padding: const EdgeInsets.only(top: 65, bottom: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Search Field
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.only(bottom: 15, left: 15, right: 15),
             child: TextField(
               controller: Get.find<ProductController>().searchController,
               decoration: InputDecoration(

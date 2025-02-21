@@ -3,8 +3,10 @@ import 'package:final_project/app/data/provider/supabase_provider.dart';
 
 class ProfileController extends GetxController {
   var userData = {}.obs;
+  var isLoading = true.obs;
 
   Future<void> fetchUserData() async {
+    isLoading.value= true;
     try {
       final email = SupabaseProvider.instance.supabase.auth.currentUser?.email;
 
@@ -22,6 +24,10 @@ class ProfileController extends GetxController {
     } catch (e) {
       print('Error fetching user data: $e');
       userData.value = {};
+    } finally {
+      isLoading.value = false; // Ensure loading state is reset
     }
   }
+
+
 }
