@@ -69,8 +69,17 @@ class SupabaseProvider {
     }
   }
 
+  Future<void> deleteImage(String bucketName, String filePath) async {
+    try {
+      await supabase.storage.from(bucketName).remove([filePath]);
+      print('Deleted old image: $filePath');
+    } catch (e) {
+      print('----- Error deleting old image: $e');
+    }
+  }
+
   Future<Map<String, dynamic>?> updateUser(
-      {required String id,
+      {required int id,
       String? firstName,
       String? lastName,
       String? email,

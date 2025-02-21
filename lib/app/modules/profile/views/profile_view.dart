@@ -21,6 +21,9 @@ class ProfileView extends GetView {
       body: Obx(() {
         // Use Obx to reactively update the UI when userData changes
         final userData = controller.userData.value;
+        if (controller.isLoading.value == true) {
+          return Center(child: CircularProgressIndicator());
+        }
         return SingleChildScrollView(
           child: Column(
             children: [
@@ -29,7 +32,7 @@ class ProfileView extends GetView {
                 alignment: Alignment.center,
                 children: [
                   Container(
-                    height: 250,
+                    height: 200,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [Colors.grey[800]!, Colors.blueGrey[600]!],
@@ -44,25 +47,7 @@ class ProfileView extends GetView {
                       SizedBox(width: 20),
                       GestureDetector(
                         onTap: () async {
-                          final pickedFile =
-                          await ImagePicker().pickImage(source: ImageSource.gallery);
-                          if (pickedFile != null) {
-                            File file = File(pickedFile.path);
-                            String? imageUrl = await SupabaseProvider.instance.uploadImage(
-                              file,
-                              'profile_images', // Bucket name
-                              '${userData['id']}/profile_picture.png', // Path in the bucket
-                            );
-                            if (imageUrl != null) {
-                              // Update the user's profile with the new image URL
-                              await SupabaseProvider.instance.updateUser(
-                                id: userData['id'],
-                                img: imageUrl,
-                              );
-                              Get.snackbar("Success", "Profile picture updated successfully!");
-                              controller.fetchUserData(); // Refresh the UI
-                            }
-                          }
+                          await controller.updateProfilePicture();
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
@@ -79,19 +64,23 @@ class ProfileView extends GetView {
                               ),
                             ],
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(65),
-                            child: userData['profilePicture'] != null &&
-                                userData['profilePicture'].startsWith('http')
-                                ? Image.network(
-                              userData['profilePicture'],
-                              fit: BoxFit.cover,
-                            )
-                                : Image.asset(
-                              'assets/images/default_profile.jpg',
-                              fit: BoxFit.cover,
-                            ),
-                          ),
+                          child: Obx(() {
+                            final userData = controller.userData.value;
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(65),
+                              child: userData['profile'] != null &&
+                                      userData['profile']
+                                          .startsWith('http')
+                                  ? Image.network(
+                                      userData['profile'],
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.asset(
+                                      'assets/images/default_profile.jpg',
+                                      fit: BoxFit.cover,
+                                    ),
+                            );
+                          }),
                         ),
                       ),
                       SizedBox(width: 20),
@@ -103,8 +92,8 @@ class ProfileView extends GetView {
                           children: [
                             Text(
                               '${userData['first_name'] ?? ''} ${userData['last_name'] ?? ''}'
-                                  .trim() ==
-                                  ''
+                                          .trim() ==
+                                      ''
                                   ? 'Unknown User'
                                   : '${userData['first_name']} ${userData['last_name']}',
                               style: TextStyle(
@@ -139,12 +128,13 @@ class ProfileView extends GetView {
                             // Social Buttons
                             Row(
                               children: [
-                                _buildActionButton(Icons.shopping_cart, 'My Orders', Colors.blue,
-                                        () {
-                                      // Navigate to order history
-                                    }),
+                                _buildActionButton(Icons.shopping_cart,
+                                    'My Orders', Colors.blue, () {
+                                  // Navigate to order history
+                                }),
                                 SizedBox(width: 10),
-                                _buildActionButton(Icons.favorite, 'Wishlist', Colors.red, () {
+                                _buildActionButton(
+                                    Icons.favorite, 'Wishlist', Colors.red, () {
                                   Get.offNamed('/favorite');
                                 }),
                               ],
@@ -195,12 +185,15 @@ class ProfileView extends GetView {
                                   ),
                                 ),
                                 SizedBox(height: 10),
-                                _buildContactInfo(Icons.email, userData['email'] ?? 'No email'),
+                                _buildContactInfo(Icons.email,
+                                    userData['email'] ?? 'No email'),
                                 SizedBox(height: 10),
                                 _buildContactInfo(
                                   Icons.phone,
-                                  _formatPhoneNumber(userData['phone'] ?? 'No phone number'),
-                                  onEdit: () => _showUpdatePhoneDialog(controller),
+                                  _formatPhoneNumber(
+                                      userData['phone'] ?? 'No phone number'),
+                                  onEdit: () =>
+                                      _showUpdatePhoneDialog(controller),
                                 ),
                               ],
                             ),
@@ -217,13 +210,15 @@ class ProfileView extends GetView {
                       children: [
                         Text(
                           'Settings',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         ListTile(
                           leading: Icon(Icons.notifications),
                           title: Text('Notifications'),
                           trailing: Switch(
-                            value: true, // Replace with actual notification preference
+                            value: true,
+                            // Replace with actual notification preference
                             onChanged: (value) {
                               // Update notification preference
                             },
@@ -285,7 +280,8 @@ class ProfileView extends GetView {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.redAccent,
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -370,27 +366,24 @@ class ProfileView extends GetView {
   // Helper method to format phone numbers with hyphens
   String _formatPhoneNumber(String? phoneNumber) {
     if (phoneNumber == null || phoneNumber.isEmpty) {
-      return 'No phone number'; // Default message if phone number is missing
+      return 'No phone number';
     }
 
-    // Remove all non-digit characters (e.g., spaces, dashes)
     String digitsOnly = phoneNumber.replaceAll(RegExp(r'\D'), '');
 
     // Check the length of the phone number
     if (digitsOnly.length == 9) {
-      // Format as "xxx-xxx-xxx"
-      return '${digitsOnly.substring(0, 3)} - ${digitsOnly.substring(3, 6)} - ${digitsOnly.substring(6, 9)}';
+      return '${digitsOnly.substring(0, 3)}-${digitsOnly.substring(3, 6)}-${digitsOnly.substring(6, 9)}';
     } else if (digitsOnly.length == 10) {
-      // Format as "xxx-xxx-xxxx"
-      return '${digitsOnly.substring(0, 3)} - ${digitsOnly.substring(3, 6)} - ${digitsOnly.substring(6, 10)}';
+      return '${digitsOnly.substring(0, 3)}-${digitsOnly.substring(3, 6)}-${digitsOnly.substring(6, 10)}';
     } else {
-      // Return the original number if it doesn't match expected lengths
       return phoneNumber;
     }
   }
 
   // Helper method to build action buttons (e.g., My Orders, Wishlist)
-  Widget _buildActionButton(IconData icon, String text, Color color, VoidCallback onTap) {
+  Widget _buildActionButton(
+      IconData icon, String text, Color color, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       child: Container(
