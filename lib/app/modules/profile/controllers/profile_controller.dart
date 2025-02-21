@@ -1,23 +1,27 @@
 import 'package:get/get.dart';
+import 'package:final_project/app/data/provider/supabase_provider.dart';
 
 class ProfileController extends GetxController {
-  //TODO: Implement ProfileController
+  var userData = {}.obs;
 
-  final count = 0.obs;
-  @override
-  void onInit() {
-    super.onInit();
+  Future<void> fetchUserData() async {
+    try {
+      final email = SupabaseProvider.instance.supabase.auth.currentUser?.email;
+
+      if (email == null) {
+        throw Exception('User is not authenticated');
+      }
+      print('Fetching data for email: $email'); // Debug log
+
+      final response = await SupabaseProvider.instance.fetchUser(email);
+      if (response == null) {
+        throw Exception('Failed to fetch user data');
+      }
+
+      userData.value = response;
+    } catch (e) {
+      print('Error fetching user data: $e');
+      userData.value = {};
+    }
   }
-
-  @override
-  void onReady() {
-    super.onReady();
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
-  }
-
-  void increment() => count.value++;
 }

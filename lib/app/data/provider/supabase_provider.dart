@@ -110,9 +110,12 @@ class SupabaseProvider {
       final response =
           await supabase.from('users').select().eq('email', email).single();
 
-      if (response.error != null) {
-        throw Exception('Failed to fetch user: ${response.error!.message}');
+      if (response == null) {
+        print('No user found with email: $email');
+        return null;
       }
+
+      return response;
     } catch (e) {
       print('----- Error fetching user: $e');
       return null;
