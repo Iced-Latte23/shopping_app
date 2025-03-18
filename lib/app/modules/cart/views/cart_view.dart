@@ -12,17 +12,14 @@ class CartView extends StatefulWidget {
 class _CartViewState extends State<CartView> with TickerProviderStateMixin {
   final CartController cartController = Get.put(CartController());
   final ProductController productController = Get.put(ProductController());
-
-  // Animation controller for the checkmark
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the animation controller
     _animationController = AnimationController(
-      vsync: this, // Use `this` as the TickerProvider
+      vsync: this,
       duration: const Duration(milliseconds: 500),
     );
 
@@ -34,7 +31,6 @@ class _CartViewState extends State<CartView> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    // Dispose the animation controller to avoid memory leaks
     _animationController.dispose();
     super.dispose();
   }

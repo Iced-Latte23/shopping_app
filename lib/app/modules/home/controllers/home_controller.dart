@@ -15,5 +15,4 @@ class HomeController extends GetxController {
   void setSelectedCategory(String category) {
     selectedCategory.value = category;
   }
-
 }

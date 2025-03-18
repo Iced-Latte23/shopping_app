@@ -1,27 +1,27 @@
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../data/provider/supabase_provider.dart';
 
 class LoginController extends GetxController {
   // Observables
-  var togglePassword = false.obs; // Password visibility toggle
-  var isLoading = false.obs; // Loading state for login button
-  var emailError = ''.obs; // Email error message
-  var passwordError = ''.obs; // Password error message
+  var togglePassword = false.obs;
+  var isLoading = false.obs;
+  var emailVerified = false.obs;
+  var emailError = ''.obs;
+  var passwordError = ''.obs;
+  var userEmail = ''.obs;
+  final RxString errorMessage = ''.obs;
 
-  // Toggle password visibility
   void toggleShowPassword() {
     togglePassword.value = !togglePassword.value;
   }
 
-  // Perform login with email and password
   Future<void> login(String email, String password) async {
-    // Reset error message and set loading state
     emailError.value = '';
     passwordError.value = '';
     isLoading.value = true;
 
     try {
-      // Validate input fields
       if (!_validateEmail(email)) {
         emailError.value = 'Please enter a valid email address.';
         return;
@@ -31,23 +31,20 @@ class LoginController extends GetxController {
         return;
       }
 
-      // Attempt login
-      final bool success = await SupabaseProvider.instance
-          .loginWithEmail(email: email, password: password);
-
-      if (success) {
-        // Navigate to home screen on successful login
+      final response =
+          await SupabaseProvider.instance.supabase.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+      if (response.user != null) {
         Get.offAllNamed('/home');
       } else {
-        // Handle login failure
         passwordError.value = 'Invalid email or password.';
       }
     } catch (e) {
-      // Handle unexpected errors
       passwordError.value = 'An error occurred. Please try again later.';
-      print('Login Error: $e'); // Log the error for debugging
+      print('Login Error: $e');
     } finally {
-      // Reset loading state
       isLoading.value = false;
     }
   }
@@ -62,4 +59,72 @@ class LoginController extends GetxController {
   bool _validatePassword(String password) {
     return password.isNotEmpty && password.length >= 6;
   }
+
+  Future<void> resetPassword(String newPassword) async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      if (!_validatePassword(newPassword)) {
+        errorMessage.value = 'Password must be at least 6 characters long.';
+        return;
+      }
+
+      final updateResponse = await SupabaseProvider.instance.supabase.auth
+          .updateUser(UserAttributes(email: userEmail.value, password: newPassword));
+      if (updateResponse.error != null) {
+        errorMessage.value =
+            'Failed to update password: ${updateResponse.error!.message}';
+        Get.snackbar('Error', errorMessage.value,
+            snackPosition: SnackPosition.TOP);
+        return;
+      }
+
+      Get.snackbar('Success', 'Password changed successfully!',
+          snackPosition: SnackPosition.TOP);
+    } catch (e) {
+      print('Password Update Error: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<bool> checkEmailExists(String email) async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      // Validate input
+      if (!_validateEmail(email)) {
+        errorMessage.value = 'Please enter a valid email address.';
+        return false;
+      }
+
+      final response = await SupabaseProvider.instance.supabase
+          .from('users')
+          .select('email')
+          .eq('email', email)
+          .single();
+      if (response == null) {
+        errorMessage.value = 'Email not found.';
+        return emailVerified.value = false;
+      }
+
+      userEmail.value = email;
+      return emailVerified.value = true;
+    } catch (e) {
+      print('‼️ Email Check Error: $e');
+      return emailVerified.value = false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+}
+
+extension on bool {
+  get user => null;
+}
+
+extension on UserResponse {
+  get error => null;
 }

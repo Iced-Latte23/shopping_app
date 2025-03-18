@@ -71,6 +71,11 @@ class StyledBottomNavigationBar extends StatelessWidget {
                     top: 0,
                     child: Obx(() {
                       final cartItemCount = cartController.cartItems.fold<int>(0, (sum, item) => sum + item.qty.value);
+
+                      if (cartItemCount == 0) {
+                        return Container(); // Return an empty container if the count is 0
+                      }
+
                       return Container(
                         padding: const EdgeInsets.all(2),
                         decoration: BoxDecoration(

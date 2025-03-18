@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:mime/mime.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -7,39 +8,28 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../routes/app_pages.dart';
 
 class SupabaseProvider {
-  static SupabaseProvider instance = SupabaseProvider._privateConstructor();
+  static final SupabaseProvider instance = SupabaseProvider._privateConstructor();
 
   SupabaseProvider._privateConstructor();
 
-  final supabase = Supabase.instance.client;
+  final SupabaseClient supabase = Supabase.instance.client;
 
-  Future<bool> addUser(
-      {required String firstName,
-      required String lastName,
-      required String email,
-      String? img}) async {
+  Future<bool> addUser({required String firstName, required String lastName, required String email, String? img}) async {
     try {
       final response = await supabase.from('users').insert({
         'first_name': firstName,
         'last_name': lastName,
         'email': email,
-        'profile': img ?? "", // If img is null, set it to an empty string
+        'profile': img ?? "",
       });
 
-      // Debugging: Check the full response
-      print('---- Full response: $response');
-
-      // Check if there was an error in the response
       if (response.error != null) {
-        print('Error adding user: ${response.error!.message}');
-        return false; // Return false if there's an error
+        debugPrint('Error adding user: ${response.error!.message}');
+        return false;
       }
-
-// If there's no error, return true to indicate success
       return true;
     } catch (e) {
-      // Catch any unexpected errors and log them
-      print('---- Error adding user: $e');
+      debugPrint('---- Error adding user: $e');
       return false;
     }
   }
@@ -60,11 +50,11 @@ class SupabaseProvider {
         return null;
       }
       final publicUrl = supabase.storage.from(bucket).getPublicUrl(path);
-      print("----- Uploaded Image URL: $publicUrl");
+      debugPrint("----- Uploaded Image URL: $publicUrl");
       return publicUrl;
     } catch (e) {
       Get.snackbar("Error", "Image upload failed: $e");
-      print("----- Image upload failed: $e");
+      debugPrint("----- Image upload failed: $e");
       return null;
     }
   }
@@ -72,67 +62,57 @@ class SupabaseProvider {
   Future<void> deleteImage(String bucketName, String filePath) async {
     try {
       await supabase.storage.from(bucketName).remove([filePath]);
-      print('Deleted old image: $filePath');
+      debugPrint('Deleted old image: $filePath');
     } catch (e) {
-      print('----- Error deleting old image: $e');
+      debugPrint('----- Error deleting old image: $e');
     }
   }
 
-  Future<Map<String, dynamic>?> updateUser(
-      {required int id,
-      String? firstName,
-      String? lastName,
-      String? email,
-      String? img}) async {
+  Future<Map<String, dynamic>?> updateUser({required int id, String? firstName, String? lastName, String? email,String? phone,String? img}) async {
     try {
-      // Create a map of fields to update (only non-null values are included)
       final Map<String, dynamic> updateData = {};
       if (firstName != null) updateData['first_name'] = firstName;
       if (lastName != null) updateData['last_name'] = lastName;
       if (email != null) updateData['email'] = email;
+      if (phone != null) updateData['phone'] = phone;
       if (img != null) updateData['profile'] = img;
 
-      // If no fields are provided to update, return null
       if (updateData.isEmpty) {
-        print('----- No fields provided to update.');
+        debugPrint('----- No fields provided to update.');
         return null;
       }
 
-      // Perform the update operation
-      final response =
-          await supabase.from('users').update(updateData).eq('id', id);
+      final response = await supabase.from('users').update(updateData).eq('id', id);
 
       if (response.error != null) {
-        throw Exception('Failed to update user: ${response.error!.message}');
+        debugPrint('Failed to update user: ${response.error!.message}');
       }
 
       // Assuming the response contains the updated data
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('----- Error updating user: $e');
+      debugPrint('----- Error updating user: $e');
       return null;
     }
   }
 
   Future<Map<String, dynamic>?> fetchUser(String email) async {
     try {
-      final response =
-          await supabase.from('users').select().eq('email', email).single();
+      final response = await supabase.from('users').select().eq('email', email).single();
 
       if (response == null) {
-        print('No user found with email: $email');
+        debugPrint('No user found with email: $email');
         return null;
       }
 
       return response;
     } catch (e) {
-      print('----- Error fetching user: $e');
+      debugPrint('----- Error fetching user: $e');
       return null;
     }
   }
 
-  Future<bool> loginWithEmail(
-      {required String email, required String password}) async {
+  Future<bool> loginWithPassword({required String email, required String password}) async {
     try {
       final response = await supabase.auth.signInWithPassword(
         email: email,
@@ -140,19 +120,17 @@ class SupabaseProvider {
       );
       return response.session != null;
     } catch (e) {
-      Get.snackbar("Error", 'Error ${e.toString()}');
+      debugPrint('$e');
       return false;
     }
   }
 
-  Future<bool> signUpWithEmail(
-      {required String email, required String password}) async {
+  Future<bool> signUpWithEmail({required String email, required String password}) async {
     try {
-      final response =
-          await supabase.auth.signUp(email: email, password: password);
+      final response = await supabase.auth.signUp(email: email, password: password);
       return response.user != null;
     } catch (e) {
-      print('----- Sign-up error: $e');
+      debugPrint('----- Sign-up error: $e');
       return false;
     }
   }
@@ -167,15 +145,50 @@ class SupabaseProvider {
       await supabase.auth.signOut();
       Get.offAllNamed(Routes.LOGIN);
     } catch (e) {
-      print('----- Error signing out: $e');
+      debugPrint('----- Error signing out: $e');
       throw Exception('Failed to sign out: $e');
     }
   }
+
+  Future<Session?> getCurrentSession() async {
+    try {
+      final session = await supabase.auth.currentSession;
+      return session;
+    } catch (e) {
+      debugPrint('----- Error getting current session: $e');
+      return null;
+    }
+  }
+
+  // Future<bool> changePassword(String newPassword) async {
+  //   try {
+  //     final authResponse = await supabase.auth.signInWithPassword(
+  //       password: newPassword,
+  //     );
+  //
+  //     if (authResponse.user != null) {
+  //       final updateResponse = await supabase.auth.updateUser(
+  //         UserAttributes(password: newPassword)
+  //       );
+  //
+  //       if (updateResponse.user != null) {
+  //         Get.snackbar('Success', 'Password changed successfully');
+  //         return true;
+  //       } else {
+  //         Get.snackbar('Error', 'Failed to change password');
+  //         return false;
+  //       }
+  //     } else {
+  //       Get.snackbar('Error', 'Authentication failed');
+  //       return false;
+  //     }
+  //   } catch (e) {
+  //     Get.snackbar('Error','----- Error changing password: $e');
+  //     return false;
+  //   }
+  // }
 }
 
-extension on PostgrestMap {
-  get error => null;
-}
 
 extension on String {
   get error => null;
